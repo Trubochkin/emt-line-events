@@ -1,0 +1,31 @@
+<div class="modal-body">
+    <div class="modal-header">
+        <h2 class="modal-header-title">
+            <i class="fa fa-info-circle"></i>
+            <span class="p-l-1">Adding an Comment</span>
+        </h2>
+
+        <a class="modal-header-close" ng-click="dismiss();">
+            <i class="fa fa-remove"></i>
+        </a>
+    </div>
+
+
+    <div class="modal-content">
+        <div class="text-center">
+            <!--<img src="public/plugins/emt-discrete-panel/img/machine.svg"></img>-->
+
+        </div>
+        <p class="p-a-2 text-center offset-lg-1 col-lg-10">
+            Alerts are added and configured in the <strong>Alert Tab</strong> of any dashboard
+            graph panel, letting you build and visualize an alert using existing queries.
+            <br> <br>
+            To persist you alert rule changes remember to save the dashboard.
+            <br>
+            <br>
+            <a href="{{appSubUrl}}" class="external-link" ng-click="dismiss()">Go to Home Dashboard</a>
+        </p>
+    </div>
+    <button type="button" class="btn btn-success" ng-click="writeToDB('data')">Write data</button>
+    <span ng-click="writeToDB()">console</span>
+</div>

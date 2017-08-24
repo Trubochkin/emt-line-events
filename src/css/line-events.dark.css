@@ -1,0 +1,91 @@
+.grafana-tooltip {
+    background-color: rgba(0, 0, 0, 1);
+}
+
+.modal {
+    position: fixed;
+}
+
+
+.table-panel-scroll-emt {
+    overflow: auto;
+}
+
+.table-panel-container-emt {
+    padding-top: 2.2em;
+    position: relative;
+}
+
+.table-panel-footer-emt {
+    text-align: center;
+    font-size: 90%;
+    line-height: 2px;
+}
+.table-panel-footer-emt ul {
+    position: relative;
+    display: inline-block;
+    margin-left: 0;
+    margin-bottom: 0;
+}
+.table-panel-footer-emt ul > li {
+    display: inline; /* Remove list-style and block-level defaults*/
+}
+.table-panel-footer-emt ul > li > a {
+    float: left; /*Collapse white-space*/
+    padding: 4px 12px;
+    text-decoration: none;
+    border-left-width: 0;
+}
+
+.table-panel-table-emt {
+    width: 100%;
+    border-collapse: collapse;
+}
+.table-panel-table-emt th {
+    padding: 0;
+}
+.table-panel-table-emt :first-child.table-panel-table-header-inner-emt {
+    padding-left: 15px;
+}
+
+.table-panel-table-emt td {
+    padding: 0.45em 0 0.45em 1.1em;
+    border-bottom: 2px solid rgb(20,20,20);
+    border-right: 2px solid rgb(20,20,20);
+}
+.table-panel-table-emt:first-child {
+    padding-left: 15px;
+}
+.table-panel-table-emt:last-child {
+    border-right: none;
+}
+
+.table-panel-header-bg-emt {
+    background: #242222;
+    border-top: 2px solid rgb(20,20,20);
+    border-bottom: 2px solid rgb(20,20,20);
+    height: 2.0em;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+}
+
+.table-panel-table-header-inner-emt {
+    padding: 0.45em 0 0.45em 1.1em;
+    text-align: left;
+    color: #2AB2E4;
+    position: absolute;
+    top: 0;
+}
+
+/*.table-panel-table-body-inner-emt{
+    background: #ECECEC;
+    border-top: 2px solid rgb(20,20,20);
+    border-bottom: 2px solid rgb(20,20,20);
+    height: 2.0em;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+}*/

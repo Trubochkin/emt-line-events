@@ -1,27 +1,56 @@
 
-<div class="canvas-spot" style="width:100%;"></div>
+<div ng-show="ctrl.panel.showGraph" class="canvas-spot" style="width:100%;"></div>
 
 
 <div ng-show="ctrl.panel.showLegend">
     <div ng-repeat="metric in ctrl.data">
         <span ng-show="ctrl.panel.showLegendNames">{{ metric.name }}: </span>
         <div ng-show="ctrl.panel.showLegendValues"
-          ng-repeat="info in metric.legendInfo | orderBy:ctrl.panel.legendSortBy | limitTo:ctrl.panel.legendMaxValues"
-          style="cursor: default; display:inline-block; margin-right:15px;"
-          ng-mousemove="ctrl.showLegandTooltip($event, info);"
-          ng-mouseleave="ctrl.clearTT()">
-            <div ng-style="{ 'background-color': ctrl.getColor(info.val) }"
+             ng-repeat="info in metric.legendInfo | orderBy:ctrl.panel.legendSortBy | limitTo:ctrl.panel.legendMaxValues"
+             style="cursor: default; display:inline-block; margin-right:15px;"
+             ng-mousemove="ctrl.showLegandTooltip($event, info);"
+             ng-mouseleave="ctrl.clearTT()">
+            <div ng-style="{ 'background-color': ctrl.getColor(info) }"
                  style="width:10px; height:10px; display:inline-block;">
 
             </div>
             {{ ctrl.getLegendDisplay( info, metric ) }}
         </div>
         <div ng-show="ctrl.panel.showTransitionCount" style="display:inline-block;">
-         &nbsp; Transitions: {{metric.transitionCount}}
+            &nbsp; Transitions: {{metric.transitionCount}}
         </div>
         <div ng-show="ctrl.panel.showDistinctCount" style="display:inline-block;">
-         &nbsp; Distinct: {{metric.distinctValuesCount}}
+            &nbsp; Distinct: {{metric.distinctValuesCount}}
         </div>
     </div>
-    <button type="button" class="btn btn-success" ng-click="ctrl.writeToDB(ctrl.data)">Write data</button>
+</div>
+
+
+
+<div ng-show="ctrl.panel.showTable">
+    <div class="table-panel-container-emt">
+        <!--<div class="table-panel-header-bg" ng-show="ctrl.table.rows.length"></div>-->
+        <div class="table-panel-header-bg-emt"></div>
+        <div class="table-panel-scroll-emt" >
+            <table class="table-panel-table-emt">
+                <thead>
+                <tr>
+                    <!--<th ng-repeat="col in ctrl.table.columns" ng-hide="col.hidden">-->
+                    <th ng-repeat="col in ctrl.panel.dataTable.headerNames">
+                        <!--<div class="table-panel-table-header-inner pointer" ng-click="ctrl.toggleColumnSort(col, $index)">-->
+                        <div class="table-panel-table-header-inner-emt pointer">
+                            {{col}}
+                            <!--<span class="table-panel-table-header-controls" ng-if="col.sort">
+                                    <i class="fa fa-caret-down" ng-show="col.desc"></i>
+                                    <i class="fa fa-caret-up" ng-hide="col.desc"></i>
+                            </span>-->
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody class="table-panel-table-body-inner-emt">
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

@@ -1,9 +1,23 @@
-
-
 <div class="editor-row">
 
     <div class="section gf-form-group">
         <h5 class="section-heading">Display</h5>
+        <div class="gf-form">
+            <gf-form-switch class="gf-form"
+                            label="Show graph"
+                            label-class="gf-form-label width-14"
+                            checked="ctrl.panel.showGraph"
+                            on-change="ctrl.onConfigChanged()"></gf-form-switch>
+        </div>
+
+        <div class="gf-form">
+            <gf-form-switch class="gf-form"
+                            label="Show table"
+                            label-class="gf-form-label width-14"
+                            checked="ctrl.panel.showTable"
+                            on-change="ctrl.onConfigChanged()"></gf-form-switch>
+        </div>
+
         <div class="gf-form">
           <label class="gf-form-label width-14">Row Height</label>
           <input type="number" ng-model="ctrl.panel.rowHeight" class="gf-form-input max-width-5" ng-blur="ctrl.render()" min="1"/>
@@ -36,6 +50,13 @@
             checked="ctrl.panel.writeAllValues"
             on-change="ctrl.onConfigChanged()"></gf-form-switch>
         </div>
+        <!--<div class="gf-form">
+          <gf-form-switch class="gf-form"
+            label="Show values as number"
+            label-class="gf-form-label width-14"
+            checked="ctrl.panel.showValuesAsNumber"
+            on-change="ctrl.onConfigChanged()"></gf-form-switch>
+        </div>-->
     </div>
 
     <div class="section gf-form-group">

@@ -7,11 +7,11 @@
       <span class="gf-form-label">
         <i class="fa fa-remove pointer" ng-click="ctrl.removeValueMap(map)"></i>
       </span>
-      <input type="text" ng-model="map.value" placeholder="value" class="gf-form-input max-width-6" ng-blur="ctrl.render()">
+      <input type="text" ng-model="map.value" placeholder="value" class="gf-form-input max-width-6" ng-blur="ctrl.onConfigChanged()">
       <span class="gf-form-label">
         <i class="fa fa-arrow-right"></i>
       </span>
-      <input type="text" placeholder="text" ng-model="map.text" class="gf-form-input max-width-8" ng-blur="ctrl.render()">
+      <input type="text" placeholder="text" ng-model="map.text" class="gf-form-input max-width-8" ng-blur="ctrl.onConfigChanged()">
     </div>
 
     <div class="gf-form-button-row">
@@ -23,6 +23,7 @@
   </div>
 </div>
 
+<!--
 <div class="editor-row">
   <h5 class="page-heading">Range Mappings</h5>
   <div class="gf-form-group">
@@ -45,4 +46,4 @@
       </button>
     </div>
   </div>
-</div>
+</div>-->

@@ -1,0 +1,7 @@
+.grafana-tooltip {
+    background-color: rgba(225,225,225, 1);
+}
+
+.modal {
+    position: fixed;
+}

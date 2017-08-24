@@ -1,12 +1,12 @@
 {
   "type": "panel",
-  "name": "Line State",
-  "id": "emt-discrete-panel",
+  "name": "Events of Line",
+  "id": "emt-line-events",
 
   "info": {
     "description": "Plugin for displaying discrete states of the production line",
     "author": {
-      "name": "Alexey Trubochkin"
+      "name": "Viravix Group OU"
     },
     "keywords": [ "discrete", "events", "strings", "states" ],
     "logos": {

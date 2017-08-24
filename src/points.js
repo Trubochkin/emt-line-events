@@ -12,14 +12,17 @@ export default class DistinctPoints {
     this.asc = false;
   }
 
-  // ts numeric ms,
-  // val is the normalized value
-  add( ts, val ) {
+  // ts: numeric ms,
+  // val: is the normalized value
+  add( ts, val, comment, color, numVal) {
     if(this.last == null) {
       this.last = {
+        numVal: numVal,
         val: val,
         start: ts,
-        ms: 0
+        ms: 0,
+        comment: comment,
+        color: color
       };
       this.changes.push(this.last);
     }
@@ -45,9 +48,12 @@ export default class DistinctPoints {
       }
       else {
         this.last = {
+          numVal: numVal,
           val: val,
           start: ts,
-          ms: 0
+          ms: 0,
+          comment: comment,
+          color: color
         };
         this.changes.push(this.last);
       }
@@ -57,9 +63,8 @@ export default class DistinctPoints {
   finish(ctrl) {
     if(this.changes.length<1) {
       console.log( "no points found!" );
-      return;
+      /*return;*/
     }
-
 
     if(!this.asc) {
       this.last = this.changes[0];
@@ -75,11 +80,12 @@ export default class DistinctPoints {
       });
     }
 
+      /*console.log('ctrl.panel.legendMaxValues', ctrl.panel.legendMaxValues);*/
     this.transitionCount = 0;
     var valToInfo = {};
     var lastTS = 0;
     var legendCount = 0;
-    var maxLegendSize = ctrl.panel.legendMaxValues;
+    var maxLegendSize = ctrl.panel.legendMaxValues;  // количество значений в легенде
     if(!maxLegendSize) {
       maxLegendSize = 20;
     }
@@ -92,7 +98,7 @@ export default class DistinctPoints {
       if( s < ctrl.range.from ) {
         s = ctrl.range.from;
       }
-      else if(s<ctrl.range.to) {
+      else if(s < ctrl.range.to) {
         this.transitionCount++;
       }
 
@@ -101,14 +107,14 @@ export default class DistinctPoints {
       }
 
       last.ms = e - s;
-      if(last.ms>0) {
+      if(last.ms > 0) {
         if(_.has(valToInfo, last.val)) {
           var v = valToInfo[last.val];
           v.ms += last.ms;
           v.count++;
         }
         else {
-          valToInfo[last.val] = { 'val': last.val, 'ms': last.ms, 'count':1 };
+          valToInfo[last.val] = { 'val': last.val, 'ms': last.ms, 'count':1, color: last.color, numVal: last.numVal};
           legendCount++;
         }
       }
@@ -123,6 +129,6 @@ export default class DistinctPoints {
       this.legendInfo.push( value );
     });
     this.distinctValuesCount = _.size(this.legendInfo);
-    //console.log( "FINISH", valToInfo, this );
+    /*console.log( "FINISH", valToInfo, this );*/
   }
 }

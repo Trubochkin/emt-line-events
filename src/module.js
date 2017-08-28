@@ -9,7 +9,6 @@ import kbn from 'app/core/utils/kbn';
 /*import {/!*coreModule,*!/ appEvents} from  'app/core/core';*/
 import appEvents from 'app/core/app_events';
 import {loadPluginCss} from 'app/plugins/sdk';
-import {tableOptionsTab} from './table';
 
 loadPluginCss({
     dark: 'plugins/emt-line-events/css/line-events.dark.css',
@@ -21,6 +20,7 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
     constructor($scope, $injector, $q, $http, alertSrv, datasourceSrv, contextSrv, $rootScope) {
         super($scope, $injector, $q);
         this.data = null;
+        this.dataTable = null;
         this.$http = $http;
         this.$scope = $scope;
         this.alertSrv = alertSrv;
@@ -29,29 +29,21 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
         this.max = 64;
         this.saveForm = null;
         this.$rootScope = $rootScope;
-        //console.log('panel-datasourceSrv ', datasourceSrv);
 
         // Set and populate defaults
         var panelDefaults = {
-            rowHeight: 50,
-            valueMaps: [
-                {value: 'null', op: '=', text: 'N/A'}
-            ],
+            rowHeight: 30,
+            textSize: 16,
+            valueMaps: [{value: 'null', op: '=', text: 'N/A'}],
             mappingTypes: [
                 {name: 'value to text', value: 1},
                 {name: 'range to text', value: 2},
             ],
-            /*rangeMaps: [
-             { from: 'null', to: 'null', text: 'N/A' }
-             ],*/
-            colorMaps: [
-                /*{text: 'N/A', color: '#CCC'}*/
-            ],
+            colorMaps: [/*{text: 'N/A', color: '#CCC'}*/],
             metricNameColor: '#000000',
             valueTextColor: '#000000',
             backgroundColor: 'rgba(128, 128, 128, 0.1)',
             lineColor: 'rgba(128, 128, 128, 1.0)',
-            textSize: 24,
             writeLastValue: true,
             writeAllValues: false,
             writeMetricNames: false,
@@ -64,10 +56,47 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
             setOwnColors: false,
             showGraph: true,
             showTable: false,
-            dataTable: {
-                headerNames: ['Time', 'Metric', 'Event-name', 'Comment']
-            }
+            sort: {col: 0, desc: true},
+            columns: [
+                {
+                    name: 'Time',
+                    flags: {sort: false, desc: false}
+                },
+                {
+                    name: 'Metric',
+                    flags: {sort: false, desc: false}
+                },
+                {
+                    name: 'Event-name',
+                    flags: {sort: false, desc: false}
+                },
+                {
+                    name: 'Comment',
+                    flags: {sort: false, desc: false}
+                }
+            ]
         };
+        /*this.optionTable = {
+            sort: {col: 0, desc: true},
+            columns: [
+                {
+                    name: 'Time',
+                    flags: {sort: false, desc: false}
+                },
+                {
+                    name: 'Metric',
+                    flags: {sort: false, desc: false}
+                },
+                {
+                    name: 'Event-name',
+                    flags: {sort: false, desc: false}
+                },
+                {
+                    name: 'Comment',
+                    flags: {sort: false, desc: false}
+                }
+                ]
+        };*/
         _.defaults(this.panel, panelDefaults);
         this.externalPT = false;    //флаг положения курсора (false - над текущим графиком, true - над другим)
         this.dataWriteDB = {
@@ -88,7 +117,6 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
             }
         };
 
-
         this.events.on('init-edit-mode', this.onInitEditMode.bind(this));
         this.events.on('render', this.onRender.bind(this));
         this.events.on('data-received', this.onDataReceived.bind(this));
@@ -106,19 +134,136 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
         this.addEditorTab('Legend', 'public/plugins/emt-line-events/legend.html', 3);
         this.addEditorTab('Colors', 'public/plugins/emt-line-events/colors.html', 4);
         this.addEditorTab('Mappings', 'public/plugins/emt-line-events/mappings.html', 5);
-        this.addEditorTab('Table', tableOptionsTab, 6);
+        this.addEditorTab('Table', 'public/plugins/emt-line-events/table.html', 6);
         this.editorTabIndex = 1;
         this.refresh();
     }
 
+    tableToggleColumnSort(col, colIndex) {
+        // remove sort flag from current column
+        var options = this.panel.sort;
+        if (this.panel.columns[options.col]) {
+            this.panel.columns[options.col].flags.sort = false;
+        }
+
+        if (this.panel.sort.col === colIndex) {
+            if (this.panel.sort.desc) {
+                this.panel.sort.desc = false;
+            } else {
+                this.panel.sort.col = 0;
+                this.panel.sort.desc = true;
+            }
+        } else {
+            this.panel.sort.col = colIndex;
+            this.panel.sort.desc = true;
+        }
+        this.tableRender();
+    }
+
+    tableSortRows() {
+        var options = this.panel.sort;
+        if (options.col === null || this.panel.columns.length <= options.col) {
+            return;
+        }
+        var _this = this;
+        this.dataTable.sort(function(a, b) {
+            a = a[_this.panel.columns[options.col].name];
+            b = b[_this.panel.columns[options.col].name];
+            if (a < b) {
+                return -1;
+            }
+            if (a > b) {
+                return 1;
+            }
+            return 0;
+        });
+
+        this.panel.columns[options.col].flags.sort = true;
+
+        if (options.desc) {
+            this.dataTable.reverse();
+            this.panel.columns[options.col].flags.desc = true;
+        } else {
+            this.panel.columns[options.col].flags.desc = false;
+        }
+    }
+
+    tableTransformData(data) {
+        var arrDataTable = [];
+        if (!data) {
+            return;
+        }
+        var _this = this;
+        _.forEach(data, function (dataMetric) {
+            _.forEach(dataMetric.changes, function (dataPoint, index) {
+                if (dataPoint.ms === 0) return;
+                arrDataTable.push({
+                    [_this.panel.columns[0].name]: dataPoint.start,
+                    [_this.panel.columns[1].name]: dataMetric.name,
+                    [_this.panel.columns[2].name]: dataPoint.val,
+                    [_this.panel.columns[3].name]: dataPoint.comment,
+                    color: _this.panel.setOwnColors ? _this.getColor(dataPoint) : dataPoint.color,
+                    pointNumber: dataPoint.numVal
+                })
+            })
+        })
+        return arrDataTable;
+    }
+
+    tableInputDblclick() {
+        console.log('tableInputDblclick: ', this);
+    }
+
+    tableRender() {
+        if (this.panel.showTable) {
+            if (!this.dataTable) {
+                //console.log('render-data-empty', this.panel);
+                return;
+            }
+            //console.log('DATA-TABLE-RENDER: ', this.panel);
+            this.tableSortRows();
+
+            $('.table-body-inner-emt').empty();
+            var _this = this;
+            _.forEach(this.dataTable, function (dataPoint, index) {
+                //console.log('DATA-dataPoint: ', dataPoint);
+                $('.table-body-inner-emt').append(
+                    '<tr class="row-emt">' +
+                        '<td class="cel-emt width-14">' + moment(dataPoint[_this.panel.columns[0].name]).format('YYYY-MM-DD HH:mm:ss') + '</td>' +
+                        '<td class="cel-emt width-12">' + dataPoint[_this.panel.columns[1].name].split('.')[2].slice(2) + '</td>' +
+                        '<td class="cel-emt width-14">' +
+                            '<div style="width:10px; ' +
+                            'height:10px; ' +
+                            'display:inline-block; ' +
+                            'background-color: ' + dataPoint.color + '; ' +
+                            'margin: 0px 10px 0px 0px">' +
+                            '</div>' +
+                            dataPoint[_this.panel.columns[2].name] +
+                        '</td>' +
+                        '<td class="cel-emt comment" id="comment-'+index+'" data-index=' + index  + '>' +
+                            '<input style="cursor: pointer;" ' +
+                                'class="table-field-comment" ' +
+                                'value=\''+dataPoint[_this.panel.columns[3].name]+'\'' +
+                                'placeholder="no comment"' +
+                                'size="100%"' +
+                                'maxlength="64"' +
+                                'disabled>' +
+                        '</td>' +
+                    '</tr>>');
+                $("#comment-"+index).data(dataPoint);
+            });
+        }
+    }
+
     onRender() {
+        $('.panel-scroll').css({'max-height': (this.height) +'px'});
         if (this.panel.showGraph) {
             if (!(this.context)) {
-                console.log('render-no-context');
+                //console.log('render-no-context');
                 return;
             }
             if (!this.data) {
-                console.log('render-data-empty', this.data);
+                //console.log('render-data-empty', this.data);
                 return;
             }
 
@@ -282,33 +427,7 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
                 }
             }
         }
-        if (this.panel.showTable) {
-            console.log('DATA-TABLE-RENDER: ', this.data);
-            $('.table-panel-table-body-inner-emt').empty();
-            var dataThis = this;
-
-            _.forEach(this.data, function (dPoints, index) {
-                _.forEach(dPoints.changes, function (datapoint, index) {
-                    if (datapoint.ms === 0) return;
-                    var fillColor = dataThis.panel.setOwnColors ? dataThis.getColor(datapoint) : datapoint.color;
-                    $('.table-panel-table-body-inner-emt').append(
-                        '<tr class="row-emt">' +
-                        '<td class="cel-emt width-14">' + moment(datapoint.start).format('YYYY-MM-DD HH:mm:ss') + '</td>' +
-                        '<td class="cel-emt width-12">' + dPoints.name.split('.')[2].slice(2) + '</td>' +
-                        '<td class="cel-emt width-14">' +
-                        '           <div style="width:10px; ' +
-                        'height:10px; ' +
-                        'display:inline-block; ' +
-                        'background-color: ' + fillColor + '; ' +
-                        'margin: 0px 10px 0px 0px">' +
-                        '</div>' +
-                        datapoint.val +
-                        '</td>' +
-                        '<td style="cursor: pointer;" data-index=' + index + '>' + datapoint.comment + '</td>' +
-                        '</tr>>');
-                });
-            });
-        }
+        //this.tableRender();
     }
 
     showLegandTooltip(pos, info) {
@@ -456,8 +575,8 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
 
     onDataReceived(dataList) {
         $(this.canvas).css('cursor', 'pointer');
-        /*console.log('GOT', dataList);*/
-        var data = [];
+        //console.log('GOT', dataList);
+        var dataGraph = [];
         _.forEach(dataList, (metric) => {
             if ('table' === metric.type) {
                 if ('time' != metric.columns[0].type) {
@@ -471,7 +590,7 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
                         res.add(row[0], this.formatValue(row[i]));
                     }
                     res.finish(this);
-                    data.push(res);
+                    dataGraph.push(res);
                 }
             }
             else {
@@ -481,12 +600,14 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
                     res.add(+point[1], this.formatValue(point[2]), point[3], point[4], point[0]);
                 });
                 res.finish(this);
-                data.push(res);
+                dataGraph.push(res);
             }
         });
-        this.data = data;
-        //console.log( 'data-received');
+        //console.log( 'data-received', this.data);
+        this.data = dataGraph;
+        this.dataTable = this.tableTransformData(this.data);
         this.render();
+        this.tableRender();
     }
 
     removeColorMap(map) {
@@ -640,7 +761,6 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
         body += '<b style="display: inline-block; width: 40px">From: </b>' + this.dashboard.formatDate(moment(from)) + "<br/>";
         body += '<b style="display: inline-block; width: 40px">To: </b>' + this.dashboard.formatDate(moment(to)) + "<br/>";
         body += '<b>Duration: </b>' + moment.duration(time).humanize() + '</br>';
-
         body += '<div style="padding:0px 5px; margin:0px; background-color:#00fff0; color:#000"><b>' + point.comment + '</b></div>';
         body += '</div>';
 
@@ -745,11 +865,15 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
                 "Content-Type": "application/json"
             }
         }).then((rsp) => {
-            console.log("saved", rsp);
+            //console.log("saved", rsp);
+            if (rsp.data[0].statusWrite == 'error'){
+                this.alertSrv.set('Database Error', 'Data not saved!', 'warning', 6000);
+                return;
+            }
             this.alertSrv.set('Saved', 'Successfully saved the comment', 'success', 3000);
             this.$rootScope.$broadcast('refresh');
         }, err => {
-            console.log("errorrrrrrr", err);
+            //console.log("errorrrrrrr", err);
             this.error = err.data.error + " [" + err.status + "]";
             this.alertSrv.set('Oops', 'Something went wrong: ' + this.error, 'error', 6000);
         });

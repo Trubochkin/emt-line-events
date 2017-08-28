@@ -157,12 +157,63 @@ export class CanvasPanelCtrl extends MetricsPanelCtrl {
      }*/
 
     link(scope, elem, attrs, ctrl) {
+        //console.log( 'panel-canvasMetric-link-elem', elem);
         var timeMouseDown = 0;
         this.wrap = elem.find('.canvas-spot')[0];
         this.canvas = document.createElement("canvas");
         this.wrap.appendChild(this.canvas);
 
-        this.table = elem.find('table')[0];
+        this.tableBody = elem.find('tbody')[0];
+
+        //Фокусируемся на поле ввода
+        $(this.tableBody).on('dblclick', '.table-field-comment', function(event){
+            //console.log('JQUERY-dblclick', $(this));
+            $(this).prop('disabled', false)
+                /*.css('background', '#343232')*/
+                .focus();
+            $(this)[0].setSelectionRange($(this).prop('value').length, $(this).prop('value').length);
+        });
+
+        //Завершение ввода по нажатию кнопки Enter (потеря фокуса)
+        $(this.tableBody).on('keyup', '.table-field-comment', function (event) {
+            if (event.keyCode == 13) {
+                $(this).prop('disabled', true);
+            }
+        });
+
+        //Отправка данных при потери фокуса поля ввода
+        $(this.tableBody).on('blur', '.cel-emt.comment', function (event) {
+            var dataSend = {};
+            dataSend.user = scope.ctrl.dataWriteDB.user;
+            dataSend.datapoint = {
+                time: $(this).data('Time'),
+                pointName: $(this).data('EventName'),
+                commentText: $(this.children).prop('value'),
+                fillColor: $(this).data('color'),
+                pointNumber: $(this).data('pointNumber')
+            };
+
+            dataSend.target = $(this).data('Metric');
+            dataSend.panelId = scope.ctrl.panel.id;
+            $(this.children).prop('disabled', true);
+
+            if($(this.children).prop('value') == $(this).data('Comment')) return;
+            scope.ctrl.writeToDB(dataSend);
+            //console.log('JQUERY-blur', $(this).data('Comment'));
+        });
+
+        /*this.tableBody.addEventListener('dblclick', (evt) => {
+            //console.log('dblclick-tBody', this);
+            _.forEach(evt.path, function (tag, index) {
+                if (tag.className == 'table-field-comment') {
+                    tag.disabled = false;
+                    tag.autofocus = true;
+                    console.log('dblclick', evt.path);
+                }
+            })
+        }, true);*/
+
+
 
         $(this.canvas).css('cursor', 'pointer');
         $(this.wrap).css('width', '100%');
@@ -323,15 +374,6 @@ export class CanvasPanelCtrl extends MetricsPanelCtrl {
              appEvents.emit('graph-hover-clear');*/
         }, false);
 
-        this.table.addEventListener('dblclick', (evt) => {
-            console.log('dblclick', evt);
-            _.forEach(evt.path, function (tag, index) {
-                if (tag.tagName == 'TD' && tag.dataset.index) {
-                    console.log('dblclick', tag);
-                    console.log('dataset', tag.dataset);
-                }
-            })
-        }, true);
 
 
         // global events

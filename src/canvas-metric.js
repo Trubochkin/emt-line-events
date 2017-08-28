@@ -172,6 +172,7 @@ export class CanvasPanelCtrl extends MetricsPanelCtrl {
                 /*.css('background', '#343232')*/
                 .focus();
             $(this)[0].setSelectionRange($(this).prop('value').length, $(this).prop('value').length);
+            scope.ctrl.panel.flagFocusInput = true;
         });
 
         //Завершение ввода по нажатию кнопки Enter (потеря фокуса)
@@ -196,7 +197,7 @@ export class CanvasPanelCtrl extends MetricsPanelCtrl {
             dataSend.target = $(this).data('Metric');
             dataSend.panelId = scope.ctrl.panel.id;
             $(this.children).prop('disabled', true);
-
+            scope.ctrl.panel.flagFocusInput = false;
             if($(this.children).prop('value') == $(this).data('Comment')) return;
             scope.ctrl.writeToDB(dataSend);
             //console.log('JQUERY-blur', $(this).data('Comment'));
@@ -321,8 +322,8 @@ export class CanvasPanelCtrl extends MetricsPanelCtrl {
             event.preventDefault();
             event.stopPropagation();
 
-            var touchEvt = this.normalizeTouchPosition(evt.changedTouches[0]);
-            /*console.log('touchStart', touchEvt);*/
+            /*var touchEvt = this.normalizeTouchPosition(evt.changedTouches[0]);
+            /!*console.log('touchStart', touchEvt);*!/
             appEvents.emit('graph-hover-clear');
             this.mouse.position = this.getMousePosition(touchEvt);
             var info = {
@@ -336,7 +337,7 @@ export class CanvasPanelCtrl extends MetricsPanelCtrl {
                 },
                 evt: touchEvt,
                 panel: this.panel
-            };
+            };*/
             /*appEvents.emit('graph-hover', info);*/
         }, false);
 

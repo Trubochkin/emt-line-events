@@ -57,6 +57,7 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
             showGraph: true,
             showTable: false,
             sort: {col: 0, desc: true},
+            flagFocusInput: false,
             columns: [
                 {
                     name: 'Time',
@@ -134,7 +135,7 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
         this.addEditorTab('Legend', 'public/plugins/emt-line-events/legend.html', 3);
         this.addEditorTab('Colors', 'public/plugins/emt-line-events/colors.html', 4);
         this.addEditorTab('Mappings', 'public/plugins/emt-line-events/mappings.html', 5);
-        this.addEditorTab('Table', 'public/plugins/emt-line-events/table.html', 6);
+        //this.addEditorTab('Table', 'public/plugins/emt-line-events/table.html', 6);
         this.editorTabIndex = 1;
         this.refresh();
     }
@@ -215,7 +216,7 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
     }
 
     tableRender() {
-        if (this.panel.showTable) {
+        if (this.panel.showTable && !this.panel.flagFocusInput) {
             if (!this.dataTable) {
                 //console.log('render-data-empty', this.panel);
                 return;
@@ -681,6 +682,7 @@ class DiscretePanelCtrl extends CanvasPanelCtrl {
         //console.log( "Config changed...");
         /*this.timeSrv.refreshDashboard();*/
         this.render();
+        this.tableRender();
     }
 
     getLegendDisplay(info, metric) {
